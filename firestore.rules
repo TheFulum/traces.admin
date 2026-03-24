@@ -1,0 +1,38 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── places ──────────────────────────────────────────────────────────────
+    // Anyone can read. Only authenticated admins can write.
+    match /places/{placeId} {
+      allow read: if true;
+      allow create, update, delete: if request.auth != null;
+    }
+
+    // ── feedback ─────────────────────────────────────────────────────────────
+    // Anyone can create (submit a review). No one can read/edit/delete
+    // from the client except authenticated admins.
+    match /feedback/{feedbackId} {
+      allow create: if isValidFeedback();
+      allow read: if request.auth != null;
+      allow update, delete: if request.auth != null;
+    }
+
+    // ── helpers ───────────────────────────────────────────────────────────────
+    function isValidFeedback() {
+      let data = request.resource.data;
+      return data.keys().hasAll(['email', 'message', 'rating', 'createdAt'])
+        && data.email is string
+        && data.email.size() > 0
+        && data.email.size() <= 254
+        && data.message is string
+        && data.message.size() > 0
+        && data.message.size() <= 2000
+        && data.rating is int
+        && data.rating >= 1
+        && data.rating <= 5
+        && data.createdAt == request.time;
+    }
+  }
+}

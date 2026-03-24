@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Следы прошлого</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .hero {
+      padding: 72px 0 56px;
+      border-bottom: 1px solid var(--c-border);
+      margin-bottom: 48px;
+    }
+
+    .hero__eyebrow {
+      font-size: .75rem;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      color: var(--c-text-muted);
+      margin-bottom: 16px;
+    }
+
+    .hero__title {
+      margin-bottom: 16px;
+    }
+
+    .hero__title em {
+      font-style: italic;
+      color: var(--c-text-muted);
+    }
+
+    .hero__sub {
+      font-size: 1rem;
+      color: var(--c-text-muted);
+      max-width: 52ch;
+    }
+
+    .toolbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .toolbar__count {
+      font-size: .8125rem;
+      color: var(--c-text-muted);
+    }
+
+    .toolbar__search {
+      position: relative;
+    }
+
+    .toolbar__search input {
+      padding: 9px 14px 9px 36px;
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-sm);
+      background: var(--c-surface);
+      font-size: .875rem;
+      font-weight: 300;
+      color: var(--c-text);
+      width: 240px;
+      outline: none;
+      transition: border-color var(--transition);
+    }
+
+    .toolbar__search input:focus {
+      border-color: var(--c-accent);
+    }
+
+    .toolbar__search svg {
+      position: absolute;
+      left: 11px;
+      top: 50%;
+      transform: translateY(-50%);
+      pointer-events: none;
+      color: var(--c-text-muted);
+    }
+
+    .card__btn {
+      margin-top: 14px;
+      font-size: .75rem;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--c-text-muted);
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: color var(--transition);
+    }
+
+    .card:hover .card__btn {
+      color: var(--c-text);
+    }
+
+    .card__btn svg {
+      transition: transform var(--transition);
+    }
+
+    .card:hover .card__btn svg {
+      transform: translateX(3px);
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- nav -->
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">Следы прошлого</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Места</a></li>
+        <li><a href="map.html">Карта</a></li>
+        <li><a href="chat.html">Чат</a></li>
+        <li><a href="feedback.html">Отзыв</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- hero -->
+  <section class="hero">
+    <div class="container">
+      <p class="hero__eyebrow">Путеводитель по памятным местам</p>
+      <h1 class="hero__title">Следы <em>прошлого</em></h1>
+      <p class="hero__sub">История, запечатлённая в местах. Исследуйте памятники, мемориалы и места событий, изменивших
+        мир.</p>
+    </div>
+  </section>
+
+  <!-- places -->
+  <main class="container">
+    <div class="toolbar">
+      <span class="toolbar__count" id="count"></span>
+      <div class="toolbar__search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <input type="text" id="search" placeholder="Поиск по названию…" autocomplete="off" />
+      </div>
+    </div>
+
+    <div class="card-grid" id="grid"></div>
+
+    <div class="state-error hidden" id="error">
+      <h3>Не удалось загрузить места</h3>
+      <p>Проверьте подключение к интернету и обновите страницу.</p>
+    </div>
+  </main>
+
+  <footer class="footer">
+    <div class="container">© 2026 Следы прошлого</div>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="js/index.js"></script>
+</body>
+
+</html>

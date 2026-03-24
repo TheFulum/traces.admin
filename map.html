@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Карта — Следы прошлого</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body { overflow: hidden; }
+
+    .map-wrap {
+      position: relative;
+      height: calc(100vh - var(--nav-h));
+      width: 100%;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      background: var(--c-accent-soft);
+    }
+
+    /* ── search panel ── */
+    .map-search {
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1000;
+      width: min(480px, calc(100vw - 32px));
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      overflow: hidden;
+    }
+    .map-search__row {
+      display: flex;
+      align-items: center;
+      padding: 0 14px;
+      gap: 10px;
+    }
+    .map-search__row svg { color: var(--c-text-muted); flex-shrink: 0; }
+    .map-search__input {
+      flex: 1;
+      border: none;
+      outline: none;
+      padding: 13px 0;
+      font-size: .9375rem;
+      font-weight: 300;
+      background: transparent;
+      color: var(--c-text);
+    }
+    .map-search__input::placeholder { color: var(--c-text-muted); }
+    .map-search__clear {
+      color: var(--c-text-muted);
+      padding: 4px;
+      border-radius: 50%;
+      display: none;
+      transition: color var(--transition);
+      cursor: pointer;
+      background: none;
+      border: none;
+    }
+    .map-search__clear:hover { color: var(--c-text); }
+    .map-search__clear.visible { display: flex; }
+
+    .map-search__results {
+      border-top: 1px solid var(--c-border);
+      max-height: 240px;
+      overflow-y: auto;
+      display: none;
+    }
+    .map-search__results.open { display: block; }
+    .map-search__result {
+      padding: 11px 16px;
+      font-size: .875rem;
+      cursor: pointer;
+      border-bottom: 1px solid var(--c-border);
+      transition: background var(--transition);
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    .map-search__result:last-child { border-bottom: none; }
+    .map-search__result:hover { background: var(--c-accent-soft); }
+    .map-search__result svg { flex-shrink: 0; margin-top: 2px; color: var(--c-text-muted); }
+    .map-search__result-name { font-weight: 400; line-height: 1.3; }
+    .map-search__result-addr { font-size: .8rem; color: var(--c-text-muted); margin-top: 2px; }
+    .map-search__msg {
+      padding: 14px 16px;
+      font-size: .875rem;
+      color: var(--c-text-muted);
+      text-align: center;
+    }
+
+    /* ── custom marker ── */
+    .marker-pin {
+      width: 28px;
+      height: 28px;
+      border-radius: 50% 50% 50% 0;
+      background: var(--c-accent);
+      transform: rotate(-45deg);
+      border: 2px solid #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,.25);
+      cursor: pointer;
+      transition: transform .15s, box-shadow .15s;
+    }
+    .marker-pin:hover {
+      transform: rotate(-45deg) scale(1.15);
+      box-shadow: 0 4px 12px rgba(0,0,0,.3);
+    }
+
+    /* ── popup ── */
+    .leaflet-popup-content-wrapper {
+      border-radius: var(--radius-md) !important;
+      box-shadow: var(--shadow-md) !important;
+      border: 1px solid var(--c-border) !important;
+      padding: 0 !important;
+      overflow: hidden;
+    }
+    .leaflet-popup-content { margin: 0 !important; width: auto !important; }
+    .leaflet-popup-tip-container { display: none; }
+
+    .map-popup {
+      min-width: 220px;
+      max-width: 280px;
+    }
+    .map-popup__img {
+      width: 100%;
+      height: 140px;
+      object-fit: cover;
+      display: block;
+      background: var(--c-accent-soft);
+    }
+    .map-popup__img--placeholder {
+      width: 100%;
+      height: 100px;
+      background: var(--c-accent-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .7rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--c-text-muted);
+    }
+    .map-popup__body { padding: 14px 16px 16px; }
+    .map-popup__title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      margin-bottom: 6px;
+      line-height: 1.2;
+    }
+    .map-popup__addr {
+      font-size: .8rem;
+      color: var(--c-text-muted);
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .map-popup__btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: .75rem;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--c-text);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-sm);
+      padding: 7px 14px;
+      cursor: pointer;
+      background: none;
+      text-decoration: none;
+      transition: border-color var(--transition), background var(--transition);
+      width: 100%;
+      justify-content: center;
+    }
+    .map-popup__btn:hover { border-color: var(--c-accent); background: var(--c-accent-soft); }
+
+    /* ── places list panel (mobile toggle) ── */
+    .map-list-btn {
+      position: absolute;
+      bottom: 24px;
+      right: 16px;
+      z-index: 1000;
+      background: var(--c-surface);
+      border: 1px solid var(--c-border);
+      border-radius: var(--radius-md);
+      box-shadow: var(--shadow-md);
+      padding: 10px 16px;
+      font-size: .8rem;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      color: var(--c-text);
+      transition: background var(--transition);
+    }
+    .map-list-btn:hover { background: var(--c-accent-soft); }
+
+    /* ── loading overlay ── */
+    .map-loading {
+      position: absolute;
+      inset: 0;
+      z-index: 900;
+      background: var(--c-bg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      font-size: .875rem;
+      color: var(--c-text-muted);
+      letter-spacing: .06em;
+    }
+    .map-loading.hidden { display: none; }
+    .map-loading__spinner {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--c-border);
+      border-top-color: var(--c-accent);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">Следы прошлого</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Места</a></li>
+        <li><a href="map.html">Карта</a></li>
+        <li><a href="chat.html">Чат</a></li>
+        <li><a href="feedback.html">Отзыв</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="map-wrap">
+
+    <!-- loading -->
+    <div class="map-loading" id="map-loading">
+      <div class="map-loading__spinner"></div>
+      Загрузка карты…
+    </div>
+
+    <!-- map container -->
+    <div id="map"></div>
+
+    <!-- search -->
+    <div class="map-search" id="map-search">
+      <div class="map-search__row">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input
+          type="text"
+          id="search-input"
+          class="map-search__input"
+          placeholder="Поиск по адресу или месту…"
+          autocomplete="off"
+        />
+        <button class="map-search__clear" id="search-clear" aria-label="Очистить">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="map-search__results" id="search-results"></div>
+    </div>
+
+    <!-- places list button -->
+    <button class="map-list-btn" id="list-btn">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+        <line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
+      </svg>
+      Все места
+    </button>
+
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="js/map.js"></script>
+</body>
+</html>

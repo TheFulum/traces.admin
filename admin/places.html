@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Места — Админ</title>
+  <link rel="stylesheet" href="../css/style.css" />
+  <style>
+    .admin-layout {
+      display: grid;
+      grid-template-columns: 220px 1fr;
+      min-height: calc(100vh - var(--nav-h));
+    }
+
+    /* ── sidebar ── */
+    .admin-sidebar {
+      border-right: 1px solid var(--c-border);
+      padding: 32px 0;
+    }
+    .admin-sidebar__label {
+      font-size: .7rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--c-text-muted);
+      padding: 0 24px;
+      margin-bottom: 8px;
+    }
+    .admin-nav a {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 24px;
+      font-size: .875rem;
+      color: var(--c-text-muted);
+      transition: color var(--transition), background var(--transition);
+    }
+    .admin-nav a:hover,
+    .admin-nav a.active {
+      color: var(--c-text);
+      background: var(--c-accent-soft);
+    }
+    .admin-nav a.active { font-weight: 500; }
+    .admin-sidebar__logout {
+      margin-top: auto;
+      padding: 24px 24px 0;
+    }
+    .sidebar-bottom {
+      padding: 24px;
+      margin-top: 24px;
+      border-top: 1px solid var(--c-border);
+    }
+
+    /* ── main ── */
+    .admin-main { padding: 32px 40px; }
+    .admin-main__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 28px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .admin-main__title { font-family: var(--font-display); font-size: 1.6rem; }
+
+    /* ── table ── */
+    .places-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .875rem;
+    }
+    .places-table th {
+      text-align: left;
+      font-size: .72rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--c-text-muted);
+      padding: 10px 14px;
+      border-bottom: 1px solid var(--c-border);
+      font-weight: 400;
+    }
+    .places-table td {
+      padding: 14px;
+      border-bottom: 1px solid var(--c-border);
+      vertical-align: middle;
+    }
+    .places-table tr:last-child td { border-bottom: none; }
+    .places-table tr:hover td { background: var(--c-accent-soft); }
+
+    .table-thumb {
+      width: 52px;
+      height: 38px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      background: var(--c-accent-soft);
+      display: block;
+    }
+    .table-thumb--empty {
+      width: 52px;
+      height: 38px;
+      border-radius: var(--radius-sm);
+      background: var(--c-accent-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .6rem;
+      color: var(--c-text-muted);
+    }
+    .table-name { font-weight: 400; }
+    .table-addr { font-size: .8rem; color: var(--c-text-muted); margin-top: 2px; }
+    .table-actions { display: flex; gap: 8px; }
+    .btn-icon {
+      width: 32px;
+      height: 32px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--c-border);
+      background: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--c-text-muted);
+      transition: color var(--transition), border-color var(--transition), background var(--transition);
+    }
+    .btn-icon:hover { color: var(--c-text); border-color: var(--c-accent); }
+    .btn-icon--danger:hover { color: var(--c-danger); border-color: var(--c-danger); background: #fff5f5; }
+
+    /* ── modal ── */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.4);
+      z-index: 200;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      animation: fadeIn .15s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .modal-backdrop.hidden { display: none; }
+
+    .modal {
+      background: var(--c-surface);
+      border-radius: var(--radius-lg);
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,.18);
+      animation: slideUp .18s ease;
+    }
+    @keyframes slideUp { from { transform: translateY(12px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .modal__header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 24px 28px 0;
+      margin-bottom: 24px;
+    }
+    .modal__title { font-family: var(--font-display); font-size: 1.4rem; }
+    .modal__close {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      border: 1px solid var(--c-border);
+      background: none;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      color: var(--c-text-muted);
+      transition: color var(--transition), border-color var(--transition);
+    }
+    .modal__close:hover { color: var(--c-text); border-color: var(--c-accent); }
+    .modal__body { padding: 0 28px 28px; }
+
+    /* photo upload */
+    .photo-upload-area {
+      border: 1.5px dashed var(--c-border);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color var(--transition), background var(--transition);
+      margin-bottom: 12px;
+    }
+    .photo-upload-area:hover,
+    .photo-upload-area.drag { border-color: var(--c-accent); background: var(--c-accent-soft); }
+    .photo-upload-area p { font-size: .875rem; color: var(--c-text-muted); margin: 0; }
+    .photo-upload-area span { font-size: .8rem; color: var(--c-text-muted); }
+
+    .photo-previews {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    .photo-preview {
+      position: relative;
+      width: 80px;
+      height: 60px;
+    }
+    .photo-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--c-border);
+    }
+    .photo-preview__del {
+      position: absolute;
+      top: -6px;
+      right: -6px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--c-danger);
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .7rem;
+      line-height: 1;
+    }
+    .photo-progress {
+      font-size: .8125rem;
+      color: var(--c-text-muted);
+      margin-bottom: 12px;
+      min-height: 18px;
+    }
+    .modal__footer {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      padding-top: 8px;
+      border-top: 1px solid var(--c-border);
+      margin-top: 24px;
+    }
+
+    /* map picker */
+    #coord-map {
+      width: 100%;
+      height: 200px;
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--c-border);
+      margin-top: 8px;
+      margin-bottom: 4px;
+    }
+    .coord-hint { font-size: .78rem; color: var(--c-text-muted); margin-bottom: 16px; }
+    .coord-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="../index.html" class="nav__logo">Следы прошлого</a>
+      <span style="font-size:.8125rem;color:var(--c-text-muted)">Панель управления</span>
+    </div>
+  </nav>
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <p class="admin-sidebar__label">Навигация</p>
+      <nav class="admin-nav">
+        <a href="places.html" class="active">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Места
+        </a>
+        <a href="feedback.html">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Отзывы
+        </a>
+      </nav>
+      <div class="sidebar-bottom">
+        <button class="btn btn--outline btn--sm btn--full" id="logout-btn">Выйти</button>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="admin-main__header">
+        <h1 class="admin-main__title">Места</h1>
+        <button class="btn btn--primary" id="add-btn">+ Добавить</button>
+      </div>
+
+      <div id="table-wrap">
+        <table class="places-table">
+          <thead>
+            <tr>
+              <th>Фото</th>
+              <th>Название / адрес</th>
+              <th>3D</th>
+              <th>Действия</th>
+            </tr>
+          </thead>
+          <tbody id="places-tbody"></tbody>
+        </table>
+        <div class="state-empty hidden" id="empty-state">
+          <h3>Нет добавленных мест</h3>
+          <p>Нажмите «Добавить» чтобы создать первое место.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ── modal ── -->
+  <div class="modal-backdrop hidden" id="modal">
+    <div class="modal">
+      <div class="modal__header">
+        <h2 class="modal__title" id="modal-title">Добавить место</h2>
+        <button class="modal__close" id="modal-close">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="modal__body">
+
+        <div class="form-group">
+          <label class="form-label" for="f-name">Название *</label>
+          <input type="text" id="f-name" class="form-control" maxlength="200" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="f-address">Адрес</label>
+          <input type="text" id="f-address" class="form-control" maxlength="300" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Координаты (кликните по карте)</label>
+          <div id="coord-map"></div>
+          <p class="coord-hint" id="coord-hint">Координаты не выбраны</p>
+          <div class="coord-row">
+            <div>
+              <label class="form-label" for="f-lat">Широта</label>
+              <input type="number" id="f-lat" class="form-control" step="any" placeholder="55.7558" />
+            </div>
+            <div>
+              <label class="form-label" for="f-lng">Долгота</label>
+              <input type="number" id="f-lng" class="form-control" step="any" placeholder="37.6173" />
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="f-desc">Описание</label>
+          <textarea id="f-desc" class="form-control" rows="6" maxlength="20000"></textarea>
+        </div>
+
+        <!-- photos -->
+        <div class="form-group">
+          <label class="form-label">Фотографии (до 10)</label>
+          <div class="photo-previews" id="photo-previews"></div>
+          <div class="photo-upload-area" id="upload-area">
+            <p>Перетащите фото или нажмите для выбора</p>
+            <span>JPEG, PNG, WEBP · до 10 МБ каждое</span>
+          </div>
+          <p class="photo-progress" id="photo-progress"></p>
+          <input type="file" id="file-input" accept="image/*" multiple style="display:none" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="f-model">Sketchfab Model ID (необязательно)</label>
+          <input type="text" id="f-model" class="form-control" placeholder="a1b2c3d4e5f6…" maxlength="100" />
+          <p style="font-size:.78rem;color:var(--c-text-muted);margin-top:5px">
+            ID из URL: sketchfab.com/models/<strong>ВОТ-ЭТА-ЧАСТЬ</strong>/embed
+          </p>
+        </div>
+
+        <div class="modal__footer">
+          <button class="btn btn--outline" id="modal-cancel">Отмена</button>
+          <button class="btn btn--primary" id="modal-save">Сохранить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script type="module" src="js/places-admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Место — Следы прошлого</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: .8125rem;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      color: var(--c-text-muted);
+      margin: 32px 0 0;
+      transition: color var(--transition);
+    }
+    .back-link:hover { color: var(--c-text); }
+    .back-link svg { transition: transform var(--transition); }
+    .back-link:hover svg { transform: translateX(-3px); }
+
+    /* ── layout ── */
+    .place-layout {
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 56px;
+      padding: 40px 0 80px;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .place-layout { grid-template-columns: 1fr; gap: 32px; }
+    }
+
+    /* ── gallery ── */
+    .gallery { margin-bottom: 40px; }
+    .gallery__main {
+      width: 100%;
+      aspect-ratio: 16/9;
+      object-fit: cover;
+      border-radius: var(--radius-lg);
+      background: var(--c-accent-soft);
+      display: block;
+    }
+    .gallery__main--placeholder {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: var(--radius-lg);
+      background: var(--c-accent-soft);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--c-text-muted);
+      font-size: .75rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .gallery__thumbs {
+      display: flex;
+      gap: 8px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+    .gallery__thumb {
+      width: 72px;
+      height: 52px;
+      object-fit: cover;
+      border-radius: var(--radius-sm);
+      cursor: pointer;
+      opacity: .55;
+      border: 2px solid transparent;
+      transition: opacity var(--transition), border-color var(--transition);
+    }
+    .gallery__thumb.active,
+    .gallery__thumb:hover { opacity: 1; border-color: var(--c-accent); }
+
+    /* ── meta sidebar ── */
+    .place-meta {
+      position: sticky;
+      top: calc(var(--nav-h) + 24px);
+    }
+    .place-meta__eyebrow {
+      font-size: .75rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--c-text-muted);
+      margin-bottom: 10px;
+    }
+    .place-meta__title {
+      font-family: var(--font-display);
+      font-size: clamp(1.6rem, 3vw, 2.4rem);
+      line-height: 1.15;
+      margin-bottom: 20px;
+    }
+    .place-meta__location {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: .9rem;
+      color: var(--c-text-muted);
+      margin-bottom: 24px;
+      line-height: 1.4;
+    }
+    .place-meta__location svg { flex-shrink: 0; margin-top: 2px; }
+    .place-meta__location-text { flex: 1; }
+    .place-meta__map-btn {
+      font-size: .75rem;
+      letter-spacing: .07em;
+      text-transform: uppercase;
+      color: var(--c-text);
+      text-decoration: underline;
+      text-underline-offset: 3px;
+      cursor: pointer;
+      background: none;
+      border: none;
+      padding: 0;
+      display: block;
+      margin-top: 4px;
+      transition: color var(--transition);
+    }
+    .place-meta__map-btn:hover { color: var(--c-text-muted); }
+
+    .divider {
+      border: none;
+      border-top: 1px solid var(--c-border);
+      margin: 24px 0;
+    }
+
+    /* ── description ── */
+    .place-description {
+      font-size: 1rem;
+      line-height: 1.8;
+      color: var(--c-text);
+    }
+    .place-description p + p { margin-top: 1em; }
+
+    /* ── 3D model ── */
+    .model-section { margin-top: 48px; }
+    .model-section__label {
+      font-size: .75rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--c-text-muted);
+      margin-bottom: 14px;
+    }
+    .model-wrapper {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      border: 1px solid var(--c-border);
+      background: #0d0d0d;
+    }
+    .model-wrapper iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+    }
+
+    /* ── skeleton state ── */
+    .place-skeleton { padding: 40px 0 80px; }
+    .place-skeleton__img {
+      width: 100%;
+      aspect-ratio: 16/9;
+      border-radius: var(--radius-lg);
+      margin-bottom: 40px;
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav__inner">
+      <a href="index.html" class="nav__logo">Следы прошлого</a>
+      <ul class="nav__links">
+        <li><a href="index.html">Места</a></li>
+        <li><a href="map.html">Карта</a></li>
+        <li><a href="chat.html">Чат</a></li>
+        <li><a href="feedback.html">Отзыв</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <div class="container">
+    <a href="index.html" class="back-link">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/>
+      </svg>
+      Все места
+    </a>
+  </div>
+
+  <!-- skeleton (shown while loading) -->
+  <div class="container place-skeleton" id="skeleton">
+    <div class="place-layout">
+      <div>
+        <div class="skeleton place-skeleton__img"></div>
+        <div class="skeleton" style="height:18px;width:60%;border-radius:4px;margin-bottom:10px"></div>
+        <div class="skeleton" style="height:14px;width:80%;border-radius:4px;margin-bottom:6px"></div>
+        <div class="skeleton" style="height:14px;width:75%;border-radius:4px;margin-bottom:6px"></div>
+        <div class="skeleton" style="height:14px;width:55%;border-radius:4px"></div>
+      </div>
+      <div>
+        <div class="skeleton" style="height:14px;width:40%;border-radius:4px;margin-bottom:10px"></div>
+        <div class="skeleton" style="height:36px;width:90%;border-radius:4px;margin-bottom:20px"></div>
+        <div class="skeleton" style="height:14px;width:70%;border-radius:4px;margin-bottom:24px"></div>
+        <div class="skeleton" style="height:44px;width:100%;border-radius:4px"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- content (hidden until loaded) -->
+  <div class="container hidden" id="content">
+    <div class="place-layout">
+
+      <!-- left: gallery + description + 3D -->
+      <div>
+        <div class="gallery" id="gallery">
+          <!-- injected by JS -->
+        </div>
+
+        <div class="place-description" id="description"></div>
+
+        <div class="model-section hidden" id="model-section">
+          <p class="model-section__label">3D-модель</p>
+          <div class="model-wrapper">
+            <iframe id="model-iframe" title="3D модель места"
+              allow="autoplay; fullscreen; xr-spatial-tracking"
+              allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true">
+            </iframe>
+          </div>
+        </div>
+      </div>
+
+      <!-- right: meta sidebar -->
+      <aside class="place-meta">
+        <p class="place-meta__eyebrow">Памятное место</p>
+        <h1 class="place-meta__title" id="title"></h1>
+
+        <div class="place-meta__location" id="location-block">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/>
+          </svg>
+          <div>
+            <span class="place-meta__location-text" id="address"></span>
+            <button class="place-meta__map-btn" id="map-btn">Открыть на карте →</button>
+          </div>
+        </div>
+
+        <hr class="divider" />
+
+        <a href="feedback.html" class="btn btn--outline btn--full">Оставить отзыв</a>
+      </aside>
+
+    </div>
+  </div>
+
+  <!-- error state -->
+  <div class="container state-error hidden" id="error">
+    <h3>Место не найдено</h3>
+    <p>Возможно, оно было удалено или ссылка устарела.</p>
+    <a href="index.html" class="btn btn--outline mt-16">← Вернуться</a>
+  </div>
+
+  <footer class="footer">
+    <div class="container">© 2025 Следы прошлого</div>
+  </footer>
+
+  <div id="toast" class="toast"></div>
+
+  <script type="module" src="js/place.js"></script>
+</body>
+</html>
