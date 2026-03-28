@@ -1,8 +1,10 @@
+import { initNav } from './nav.js';
 import { db } from './firebase-init.js';
 import {
   collection, addDoc, serverTimestamp
 } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
 import { showToast, checkRateLimit, formatRemaining, markActiveNav } from './utils.js';
+initNav('');
 
 markActiveNav();
 
@@ -27,10 +29,38 @@ const RATING_LABELS = {
   5: 'Отлично'
 };
 
-document.querySelectorAll('input[name="rating"]').forEach(input => {
-  input.addEventListener('change', () => {
-    ratingText.textContent = RATING_LABELS[input.value] || '';
+// ── star buttons ──────────────────────────────────────────────────────────
+
+const starBtns    = document.querySelectorAll('.star-btn');
+const ratingInput = document.getElementById('rating-value');
+
+function setRating(value) {
+  ratingInput.value = value;
+  starBtns.forEach(btn => {
+    btn.classList.toggle('filled', parseInt(btn.dataset.value) <= value);
   });
+  ratingText.textContent = RATING_LABELS[value] || '';
+}
+
+function highlightHover(value) {
+  starBtns.forEach(btn => {
+    const v = parseInt(btn.dataset.value);
+    // show hover only if no rating selected yet, or always highlight up to hovered
+    btn.classList.toggle('filled', v <= value);
+  });
+}
+
+function restoreSelected() {
+  const current = parseInt(ratingInput.value) || 0;
+  starBtns.forEach(btn => {
+    btn.classList.toggle('filled', parseInt(btn.dataset.value) <= current);
+  });
+}
+
+starBtns.forEach(btn => {
+  btn.addEventListener('click', () => setRating(parseInt(btn.dataset.value)));
+  btn.addEventListener('mouseenter', () => highlightHover(parseInt(btn.dataset.value)));
+  btn.addEventListener('mouseleave', restoreSelected);
 });
 
 // ── submit ────────────────────────────────────────────────────────────────
@@ -38,8 +68,7 @@ document.querySelectorAll('input[name="rating"]').forEach(input => {
 submitBtn.addEventListener('click', async () => {
   const email   = emailEl.value.trim();
   const message = messageEl.value.trim();
-  const ratingEl = document.querySelector('input[name="rating"]:checked');
-  const rating  = ratingEl ? parseInt(ratingEl.value, 10) : null;
+  const rating = parseInt(document.getElementById('rating-value').value, 10) || null;
 
   // validate
   if (!email || !isValidEmail(email)) {

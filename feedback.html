@@ -46,42 +46,28 @@
     }
     .stars {
       display: flex;
-      gap: 6px;
-      margin-bottom: 28px;
-      flex-direction: row;
+      gap: 4px;
+      margin-bottom: 10px;
     }
-    .stars input { display: none; }
-    .star-label {
+    .star-btn {
       font-size: 2rem;
+      line-height: 1;
       color: var(--c-border);
       cursor: pointer;
-      transition: color var(--transition), transform var(--transition);
-      line-height: 1;
+      background: none;
+      border: none;
+      padding: 2px 4px;
+      transition: color .15s, transform .15s;
       user-select: none;
     }
-    .star-label:hover { transform: scale(1.15); }
-
-    /* highlight: hovered star and all before it */
-    .stars:has(.star-label:nth-child(2):hover) .star-label:nth-child(n+2),
-    .stars:has(.star-label:nth-child(3):hover) .star-label:nth-child(n+2):nth-child(-n+3),
-    .stars:has(.star-label:nth-child(4):hover) .star-label:nth-child(n+2):nth-child(-n+4),
-    .stars:has(.star-label:nth-child(5):hover) .star-label:nth-child(n+2):nth-child(-n+5),
-    .stars:has(.star-label:nth-child(6):hover) .star-label:nth-child(n+2) { color: var(--c-star); }
-
-    /* checked states */
-    .stars:has(#r1:checked) .star-label:nth-child(2) { color: var(--c-star); }
-    .stars:has(#r2:checked) .star-label:nth-child(n+2):nth-child(-n+3) { color: var(--c-star); }
-    .stars:has(#r3:checked) .star-label:nth-child(n+2):nth-child(-n+4) { color: var(--c-star); }
-    .stars:has(#r4:checked) .star-label:nth-child(n+2):nth-child(-n+5) { color: var(--c-star); }
-    .stars:has(#r5:checked) .star-label:nth-child(n+2) { color: var(--c-star); }
+    .star-btn:hover  { transform: scale(1.2); }
+    .star-btn.filled { color: var(--c-star); }
 
     .rating-text {
       font-size: .8125rem;
       color: var(--c-text-muted);
-      margin-top: -20px;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       min-height: 18px;
-      transition: opacity var(--transition);
     }
 
     .form-actions {
@@ -129,17 +115,7 @@
 </head>
 <body>
 
-  <nav class="nav">
-    <div class="nav__inner">
-      <a href="index.html" class="nav__logo">Следы прошлого</a>
-      <ul class="nav__links">
-        <li><a href="index.html">Места</a></li>
-        <li><a href="map.html">Карта</a></li>
-        <li><a href="chat.html">Чат</a></li>
-        <li><a href="feedback.html">Отзыв</a></li>
-      </ul>
-    </div>
-  </nav>
+  <nav class="nav"></nav>
 
   <div class="feedback-wrap">
     <div class="feedback-header">
@@ -152,18 +128,14 @@
       <!-- star rating -->
       <span class="rating-label">Оценка</span>
       <div class="stars" id="stars-row">
-        <input type="radio" name="rating" id="r1" value="1" />
-        <label class="star-label" for="r1">★</label>
-        <input type="radio" name="rating" id="r2" value="2" />
-        <label class="star-label" for="r2">★</label>
-        <input type="radio" name="rating" id="r3" value="3" />
-        <label class="star-label" for="r3">★</label>
-        <input type="radio" name="rating" id="r4" value="4" />
-        <label class="star-label" for="r4">★</label>
-        <input type="radio" name="rating" id="r5" value="5" />
-        <label class="star-label" for="r5">★</label>
+        <button type="button" class="star-btn" data-value="1">★</button>
+        <button type="button" class="star-btn" data-value="2">★</button>
+        <button type="button" class="star-btn" data-value="3">★</button>
+        <button type="button" class="star-btn" data-value="4">★</button>
+        <button type="button" class="star-btn" data-value="5">★</button>
       </div>
       <p class="rating-text" id="rating-text"></p>
+      <input type="hidden" id="rating-value" value="0" />
 
       <!-- email -->
       <div class="form-group">
