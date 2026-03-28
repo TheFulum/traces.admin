@@ -11,10 +11,7 @@
       margin: 0 auto;
       padding: 56px 24px 80px;
     }
-
-    .feedback-header {
-      margin-bottom: 40px;
-    }
+    .feedback-header { margin-bottom: 40px; }
     .feedback-header__eyebrow {
       font-size: .75rem;
       letter-spacing: .12em;
@@ -23,10 +20,7 @@
       margin-bottom: 10px;
     }
     .feedback-header__title { margin-bottom: 8px; }
-    .feedback-header__sub {
-      font-size: .9375rem;
-      color: var(--c-text-muted);
-    }
+    .feedback-header__sub { font-size: .9375rem; color: var(--c-text-muted); }
 
     .feedback-card {
       background: var(--c-surface);
@@ -35,7 +29,7 @@
       padding: 32px;
     }
 
-    /* star rating block */
+    /* ── stars ── */
     .rating-label {
       font-size: .75rem;
       letter-spacing: .08em;
@@ -46,22 +40,22 @@
     }
     .stars {
       display: flex;
-      gap: 4px;
-      margin-bottom: 10px;
-    }
-    .star-btn {
-      font-size: 2rem;
+      gap: 2px;
+      margin-bottom: 8px;
       line-height: 1;
-      color: var(--c-border);
+    }
+    .star {
+      font-size: 2.2rem;
+      color: #d9d4cc;
       cursor: pointer;
+      padding: 0 3px;
       background: none;
       border: none;
-      padding: 2px 4px;
-      transition: color .15s, transform .15s;
-      user-select: none;
+      transition: transform .1s;
+      -webkit-tap-highlight-color: transparent;
     }
-    .star-btn:hover  { transform: scale(1.2); }
-    .star-btn.filled { color: var(--c-star); }
+    .star:hover { transform: scale(1.15); }
+    .star.on { color: #b8860b; }
 
     .rating-text {
       font-size: .8125rem;
@@ -77,29 +71,20 @@
       gap: 16px;
       flex-wrap: wrap;
     }
-    .form-status {
-      font-size: .8125rem;
-      color: var(--c-text-muted);
-      min-height: 18px;
-    }
+    .form-status { font-size: .8125rem; min-height: 18px; }
     .form-status.error   { color: var(--c-danger); }
     .form-status.success { color: #2d6a4f; }
 
-    /* success state */
     .feedback-success {
       text-align: center;
       padding: 48px 32px;
     }
     .feedback-success__icon {
-      width: 52px;
-      height: 52px;
+      width: 52px; height: 52px;
       border-radius: 50%;
       background: var(--c-accent-soft);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      display: flex; align-items: center; justify-content: center;
       margin: 0 auto 20px;
-      color: var(--c-text);
     }
     .feedback-success__title {
       font-family: var(--font-display);
@@ -125,47 +110,35 @@
     </div>
 
     <div class="feedback-card" id="form-card">
-      <!-- star rating -->
+
       <span class="rating-label">Оценка</span>
-      <div class="stars" id="stars-row">
-        <button type="button" class="star-btn" data-value="1">★</button>
-        <button type="button" class="star-btn" data-value="2">★</button>
-        <button type="button" class="star-btn" data-value="3">★</button>
-        <button type="button" class="star-btn" data-value="4">★</button>
-        <button type="button" class="star-btn" data-value="5">★</button>
+      <div class="stars" id="stars">
+        <button type="button" class="star" data-v="1">★</button>
+        <button type="button" class="star" data-v="2">★</button>
+        <button type="button" class="star" data-v="3">★</button>
+        <button type="button" class="star" data-v="4">★</button>
+        <button type="button" class="star" data-v="5">★</button>
       </div>
       <p class="rating-text" id="rating-text"></p>
-      <input type="hidden" id="rating-value" value="0" />
 
-      <!-- email -->
       <div class="form-group">
         <label class="form-label" for="email">Электронная почта</label>
-        <input
-          type="email"
-          id="email"
-          class="form-control"
-          placeholder="you@example.com"
-          maxlength="254"
-          autocomplete="email"
-        />
+        <input type="email" id="email" class="form-control"
+          placeholder="you@example.com" maxlength="254" autocomplete="email" />
       </div>
 
-      <!-- message -->
       <div class="form-group">
         <label class="form-label" for="message">Сообщение</label>
-        <textarea
-          id="message"
-          class="form-control"
+        <textarea id="message" class="form-control"
           placeholder="Поделитесь впечатлениями или предложениями…"
-          maxlength="2000"
-          rows="5"
-        ></textarea>
+          maxlength="2000" rows="5"></textarea>
       </div>
 
       <div class="form-actions">
         <button class="btn btn--primary" id="submit-btn">Отправить</button>
         <span class="form-status" id="form-status"></span>
       </div>
+
     </div>
   </div>
 

@@ -1,77 +1,51 @@
 import { initNav } from './nav.js';
 import { db } from './firebase-init.js';
-import {
-  collection, addDoc, serverTimestamp
-} from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
-import { showToast, checkRateLimit, formatRemaining, markActiveNav } from './utils.js';
+import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-firestore.js";
+import { showToast, checkRateLimit, formatRemaining } from './utils.js';
+
 initNav('');
 
-markActiveNav();
+// ── star rating ───────────────────────────────────────────────────────────
 
-const RATE_LIMIT_MS = 60_000; // 1 submission per minute
+const LABELS = { 1: 'Очень плохо', 2: 'Плохо', 3: 'Нормально', 4: 'Хорошо', 5: 'Отлично' };
 
-// ── elements ──────────────────────────────────────────────────────────────
+let selectedRating = 0;
 
-const emailEl    = document.getElementById('email');
-const messageEl  = document.getElementById('message');
-const submitBtn  = document.getElementById('submit-btn');
-const statusEl   = document.getElementById('form-status');
+const stars      = Array.from(document.querySelectorAll('.star'));
 const ratingText = document.getElementById('rating-text');
-const formCard   = document.getElementById('form-card');
 
-// ── star rating labels ────────────────────────────────────────────────────
-
-const RATING_LABELS = {
-  1: 'Очень плохо',
-  2: 'Плохо',
-  3: 'Нормально',
-  4: 'Хорошо',
-  5: 'Отлично'
-};
-
-// ── star buttons ──────────────────────────────────────────────────────────
-
-const starBtns    = document.querySelectorAll('.star-btn');
-const ratingInput = document.getElementById('rating-value');
-
-function setRating(value) {
-  ratingInput.value = value;
-  starBtns.forEach(btn => {
-    btn.classList.toggle('filled', parseInt(btn.dataset.value) <= value);
-  });
-  ratingText.textContent = RATING_LABELS[value] || '';
+function paint(upTo) {
+  stars.forEach(s => s.classList.toggle('on', parseInt(s.dataset.v) <= upTo));
 }
 
-function highlightHover(value) {
-  starBtns.forEach(btn => {
-    const v = parseInt(btn.dataset.value);
-    // show hover only if no rating selected yet, or always highlight up to hovered
-    btn.classList.toggle('filled', v <= value);
-  });
-}
+stars.forEach(star => {
+  const v = parseInt(star.dataset.v);
 
-function restoreSelected() {
-  const current = parseInt(ratingInput.value) || 0;
-  starBtns.forEach(btn => {
-    btn.classList.toggle('filled', parseInt(btn.dataset.value) <= current);
+  star.addEventListener('click', () => {
+    selectedRating = v;
+    paint(v);
+    ratingText.textContent = LABELS[v];
   });
-}
 
-starBtns.forEach(btn => {
-  btn.addEventListener('click', () => setRating(parseInt(btn.dataset.value)));
-  btn.addEventListener('mouseenter', () => highlightHover(parseInt(btn.dataset.value)));
-  btn.addEventListener('mouseleave', restoreSelected);
+  star.addEventListener('mouseenter', () => paint(v));
+  star.addEventListener('mouseleave', () => paint(selectedRating));
 });
 
 // ── submit ────────────────────────────────────────────────────────────────
 
+const RATE_LIMIT_MS = 60_000;
+
+const emailEl   = document.getElementById('email');
+const messageEl = document.getElementById('message');
+const submitBtn = document.getElementById('submit-btn');
+const statusEl  = document.getElementById('form-status');
+const formCard  = document.getElementById('form-card');
+
 submitBtn.addEventListener('click', async () => {
   const email   = emailEl.value.trim();
   const message = messageEl.value.trim();
-  const rating = parseInt(document.getElementById('rating-value').value, 10) || null;
 
-  // validate
-  if (!email || !isValidEmail(email)) {
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     setStatus('Введите корректный адрес электронной почты.', 'error');
     emailEl.focus();
     return;
@@ -81,19 +55,17 @@ submitBtn.addEventListener('click', async () => {
     messageEl.focus();
     return;
   }
-  if (!rating) {
+  if (!selectedRating) {
     setStatus('Пожалуйста, поставьте оценку.', 'error');
     return;
   }
 
-  // rate limit
   const rl = checkRateLimit('feedback', RATE_LIMIT_MS);
   if (!rl.allowed) {
     setStatus(`Повторная отправка через ${formatRemaining(rl.remainingMs)}.`, 'error');
     return;
   }
 
-  // submit
   submitBtn.disabled = true;
   submitBtn.textContent = 'Отправка…';
   setStatus('');
@@ -102,12 +74,10 @@ submitBtn.addEventListener('click', async () => {
     await addDoc(collection(db, 'feedback'), {
       email,
       message,
-      rating,
+      rating: selectedRating,
       createdAt: serverTimestamp()
     });
-
     showSuccess();
-
   } catch (err) {
     console.error(err);
     setStatus('Ошибка отправки. Попробуйте ещё раз.', 'error');
@@ -117,7 +87,12 @@ submitBtn.addEventListener('click', async () => {
   }
 });
 
-// ── success state ─────────────────────────────────────────────────────────
+// ── helpers ───────────────────────────────────────────────────────────────
+
+function setStatus(text, type = '') {
+  statusEl.textContent = text;
+  statusEl.className = `form-status${type ? ' ' + type : ''}`;
+}
 
 function showSuccess() {
   formCard.innerHTML = `
@@ -132,15 +107,4 @@ function showSuccess() {
       <a href="index.html" class="btn btn--outline">← Вернуться к местам</a>
     </div>
   `;
-}
-
-// ── helpers ───────────────────────────────────────────────────────────────
-
-function setStatus(text, type = '') {
-  statusEl.textContent = text;
-  statusEl.className = `form-status${type ? ' ' + type : ''}`;
-}
-
-function isValidEmail(email) {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
