@@ -127,16 +127,17 @@ function openModal(place) {
   document.getElementById('f-model').value   = place?.sketchfabModelId || '';
   existingModelUrl = place?.modelUrl || null;
   modelFile = null;
-  // reset tabs to sketchfab
-  switchModelTab('sketchfab');
-  renderModelPreview();
   document.getElementById('photo-progress').textContent = '';
 
   renderPhotoPreviews();
   document.getElementById('modal').classList.remove('hidden');
 
-  // init map after modal visible
-  setTimeout(initPickerMap, 50);
+  // init tabs and map AFTER modal is visible in DOM
+  setTimeout(() => {
+    switchModelTab('sketchfab');
+    renderModelPreview();
+    initPickerMap();
+  }, 50);
 }
 
 function closeModal() {
@@ -318,8 +319,11 @@ async function save() {
 
 function switchModelTab(tab) {
   activeModelTab = tab;
-  document.getElementById('tab-sketchfab').style.display = tab === 'sketchfab' ? '' : 'none';
-  document.getElementById('tab-upload').style.display    = tab === 'upload'    ? '' : 'none';
+  const tabSketchfab = document.getElementById('tab-sketchfab');
+  const tabUpload    = document.getElementById('tab-upload');
+  if (!tabSketchfab || !tabUpload) return; // modal not in DOM yet
+  tabSketchfab.style.display = tab === 'sketchfab' ? '' : 'none';
+  tabUpload.style.display    = tab === 'upload'    ? '' : 'none';
   document.querySelectorAll('.model-tab').forEach(btn => {
     const isActive = btn.dataset.tab === tab;
     btn.style.background = isActive ? 'var(--c-accent)' : 'none';
