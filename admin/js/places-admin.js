@@ -1,8 +1,10 @@
+import { initNav } from '../../js/nav.js';
 import { auth } from '../../js/firebase-init.js';
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.11.0/firebase-auth.js";
 import { getPlaces, addPlace, updatePlace, deletePlace } from '../../js/places.js';
-import { uploadImages } from '../../js/cloudinary.js';
+import { uploadImages, uploadModel } from '../../js/cloudinary.js';
 import { showToast } from '../../js/utils.js';
+initNav('../');
 
 // ── auth guard ────────────────────────────────────────────────────────────
 
@@ -23,6 +25,9 @@ let photoUrls  = [];        // final URLs (already uploaded or existing)
 let newFiles   = [];        // File objects pending upload
 let pickerMap  = null;      // Leaflet map in modal
 let pickerMarker = null;
+let modelFile     = null;  // pending .glb File
+let activeModelTab = 'sketchfab';
+let existingModelUrl = null; // URL of already-uploaded model
 
 // ── load places ───────────────────────────────────────────────────────────
 
@@ -120,6 +125,11 @@ function openModal(place) {
   document.getElementById('f-lng').value     = place?.location?.lng || '';
   document.getElementById('f-desc').value    = place?.description || '';
   document.getElementById('f-model').value   = place?.sketchfabModelId || '';
+  existingModelUrl = place?.modelUrl || null;
+  modelFile = null;
+  // reset tabs to sketchfab
+  switchModelTab('sketchfab');
+  renderModelPreview();
   document.getElementById('photo-progress').textContent = '';
 
   renderPhotoPreviews();
@@ -258,6 +268,17 @@ async function save() {
       document.getElementById('photo-progress').textContent = '';
     }
 
+    // upload .glb model if provided
+    let finalModelUrl = existingModelUrl;
+    if (activeModelTab === 'upload' && modelFile) {
+      const progressEl = document.getElementById('model-progress');
+      finalModelUrl = await uploadModel(modelFile, pct => {
+        progressEl.textContent = `Загрузка модели… ${pct}%`;
+      });
+      document.getElementById('model-progress').textContent = '';
+    }
+    if (activeModelTab === 'sketchfab') finalModelUrl = null; // sketchfab takes priority
+
     const allPhotos = [...photoUrls, ...uploadedUrls];
 
     const data = {
@@ -269,7 +290,8 @@ async function save() {
         address: address
       },
       photos: allPhotos,
-      sketchfabModelId: modelId || null
+      sketchfabModelId: activeModelTab === 'sketchfab' ? (modelId || null) : null,
+      modelUrl:         activeModelTab === 'upload'    ? (finalModelUrl || null) : null
     };
 
     if (editingId) {
@@ -291,6 +313,52 @@ async function save() {
     saveBtn.textContent = 'Сохранить';
   }
 }
+
+// ── model tab switching ───────────────────────────────────────────────────
+
+function switchModelTab(tab) {
+  activeModelTab = tab;
+  document.getElementById('tab-sketchfab').style.display = tab === 'sketchfab' ? '' : 'none';
+  document.getElementById('tab-upload').style.display    = tab === 'upload'    ? '' : 'none';
+  document.querySelectorAll('.model-tab').forEach(btn => {
+    const isActive = btn.dataset.tab === tab;
+    btn.style.background = isActive ? 'var(--c-accent)' : 'none';
+    btn.style.color       = isActive ? '#fff'            : 'var(--c-text-muted)';
+  });
+}
+
+function renderModelPreview() {
+  const el = document.getElementById('model-preview');
+  if (!el) return;
+  if (modelFile) {
+    el.innerHTML = `<span>📦 ${esc(modelFile.name)}</span>
+      <button onclick="modelFile=null;renderModelPreview()" style="margin-left:8px;color:var(--c-danger);background:none;border:none;cursor:pointer;font-size:.85rem">✕ Убрать</button>`;
+  } else if (existingModelUrl) {
+    el.innerHTML = `<span>Текущая модель: <a href="${esc(existingModelUrl)}" target="_blank" style="text-decoration:underline">открыть</a></span>
+      <button onclick="existingModelUrl=null;renderModelPreview()" style="margin-left:8px;color:var(--c-danger);background:none;border:none;cursor:pointer;font-size:.85rem">✕ Убрать</button>`;
+  } else {
+    el.innerHTML = '';
+  }
+}
+
+// tab click handlers (delegated — elements are in modal)
+document.addEventListener('click', e => {
+  const tab = e.target.closest('.model-tab');
+  if (tab) switchModelTab(tab.dataset.tab);
+
+  const modelArea = document.getElementById('model-upload-area');
+  if (modelArea && e.target === modelArea) {
+    document.getElementById('model-file-input').click();
+  }
+});
+
+document.addEventListener('change', e => {
+  if (e.target.id === 'model-file-input' && e.target.files[0]) {
+    modelFile = e.target.files[0];
+    renderModelPreview();
+    e.target.value = '';
+  }
+});
 
 // ── helpers ───────────────────────────────────────────────────────────────
 

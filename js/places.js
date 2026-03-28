@@ -73,6 +73,7 @@ function sanitize(data) {
       address: String(data.location?.address || '').trim()
     },
     photos:            Array.isArray(data.photos) ? data.photos.slice(0, 10) : [],
-    sketchfabModelId:  data.sketchfabModelId ? String(data.sketchfabModelId).trim() : null
+    sketchfabModelId:  data.sketchfabModelId ? String(data.sketchfabModelId).trim() : null,
+    modelUrl:          data.modelUrl ? String(data.modelUrl).trim() : null
   };
 }

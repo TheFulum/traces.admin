@@ -1,5 +1,7 @@
+import { initNav } from './nav.js';
 import { getPlace } from './places.js';
 import { showToast, getParam, markActiveNav } from './utils.js';
+initNav('');
 
 markActiveNav();
 
@@ -68,9 +70,10 @@ function render(place) {
       .join('');
   }
 
-  // 3D model
-  if (place.sketchfabModelId) {
-    // Sketchfab embed URL format
+  // 3D model — own .glb takes priority over Sketchfab embed
+  if (place.modelUrl) {
+    renderModelViewer(place.modelUrl);
+  } else if (place.sketchfabModelId) {
     const embedUrl = `https://sketchfab.com/models/${place.sketchfabModelId}/embed?autostart=0&ui_theme=dark&dnt=1`;
     modelIframe.src = embedUrl;
     modelSec.classList.remove('hidden');
@@ -114,6 +117,34 @@ function renderGallery(photos) {
       });
     });
   }
+}
+
+// ── model-viewer ─────────────────────────────────────────────────────────
+
+function renderModelViewer(url) {
+  // Dynamically load <model-viewer> web component by Google
+  if (!customElements.get('model-viewer')) {
+    const script = document.createElement('script');
+    script.type  = 'module';
+    script.src   = 'https://ajax.googleapis.com/ajax/libs/model-viewer/3.4.0/model-viewer.min.js';
+    document.head.appendChild(script);
+  }
+
+  const wrapper = document.querySelector('.model-wrapper');
+  if (!wrapper) return;
+
+  // Replace iframe with model-viewer element
+  wrapper.innerHTML = `
+    <model-viewer
+      src="${url}"
+      alt="3D модель места"
+      camera-controls
+      auto-rotate
+      shadow-intensity="1"
+      style="width:100%;height:100%;background:#0d0d0d"
+    ></model-viewer>
+  `;
+  modelSec.classList.remove('hidden');
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────
