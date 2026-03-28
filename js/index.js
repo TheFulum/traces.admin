@@ -1,5 +1,7 @@
+import { initNav } from './nav.js';
 import { getPlaces } from './places.js';
 import { showToast, showSkeletons, markActiveNav } from './utils.js';
+initNav('');
 
 markActiveNav();
 
