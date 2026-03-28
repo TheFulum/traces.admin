@@ -334,7 +334,6 @@ textarea.form-control { resize: vertical; min-height: 120px; }
 .stars {
   display: flex;
   gap: 4px;
-  flex-direction: row-reverse;
   justify-content: flex-end;
 }
 .stars input { display: none; }
