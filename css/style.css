@@ -132,6 +132,19 @@ p { max-width: 68ch; }
 }
 .nav__login:hover { color: var(--c-text); border-color: var(--c-accent); }
 
+.nav__admin {
+  background: var(--c-accent);
+  color: #fff !important;
+  border-color: var(--c-accent);
+}
+.nav__admin:hover { background: #3d3d3d; border-color: #3d3d3d; color: #fff !important; }
+
+.nav__drawer__admin {
+  background: var(--c-accent-soft);
+  color: var(--c-text) !important;
+  font-weight: 500;
+}
+
 /* burger */
 .nav__burger {
   display: none;
