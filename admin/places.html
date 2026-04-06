@@ -252,12 +252,7 @@
 </head>
 <body>
 
-  <nav class="nav">
-    <div class="nav__inner">
-      <a href="../index.html" class="nav__logo">Следы прошлого</a>
-      <span style="font-size:.8125rem;color:var(--c-text-muted)">Панель управления</span>
-    </div>
-  </nav>
+  <nav class="nav"></nav>
 
   <div class="admin-layout">
     <aside class="admin-sidebar">
@@ -322,12 +317,7 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label" for="f-address">Адрес</label>
-          <input type="text" id="f-address" class="form-control" maxlength="300" />
-        </div>
-
-        <div class="form-group">
-          <label class="form-label">Координаты (кликните по карте)</label>
+          <label class="form-label">Координаты (кликните по карте — адрес заполнится автоматически)</label>
           <div id="coord-map"></div>
           <p class="coord-hint" id="coord-hint">Координаты не выбраны</p>
           <div class="coord-row">
@@ -340,6 +330,38 @@
               <input type="number" id="f-lng" class="form-control" step="any" placeholder="37.6173" />
             </div>
           </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="f-address">Адрес (автозаполнение с карты или вручную)</label>
+          <input type="text" id="f-address" class="form-control" maxlength="300" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="f-opening-date">Дата открытия</label>
+          <input type="text" id="f-opening-date" class="form-control" placeholder="например: 9 мая 1965 г." maxlength="100" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="f-opening-address">Адрес открытия (если отличается)</label>
+          <input type="text" id="f-opening-address" class="form-control" maxlength="300" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="f-author">Автор / Скульптор</label>
+          <input type="text" id="f-author" class="form-control" maxlength="200" />
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Категории / Теги</label>
+          <div class="tags-input-wrap" id="tags-wrap" style="
+            display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;
+            border:1px solid var(--c-border);border-radius:var(--radius-sm);
+            background:var(--c-surface);cursor:text;min-height:44px;
+          ">
+          </div>
+          <input type="text" id="f-tags-input" class="form-control" placeholder="Введите тег и нажмите Enter…" style="margin-top:6px" />
+          <p style="font-size:.78rem;color:var(--c-text-muted);margin-top:4px">Например: Скульптура, Мемориал, ВОВ</p>
         </div>
 
         <div class="form-group">
@@ -359,12 +381,16 @@
           <input type="file" id="file-input" accept="image/*" multiple style="display:none" />
         </div>
 
+        <!-- 3D model -->
         <div class="form-group">
-          <label class="form-label" for="f-model">Sketchfab Model ID (необязательно)</label>
-          <input type="text" id="f-model" class="form-control" placeholder="a1b2c3d4e5f6…" maxlength="100" />
-          <p style="font-size:.78rem;color:var(--c-text-muted);margin-top:5px">
-            ID из URL: sketchfab.com/models/<strong>ВОТ-ЭТА-ЧАСТЬ</strong>/embed
-          </p>
+          <label class="form-label">3D-модель .glb (необязательно)</label>
+          <div class="photo-upload-area" id="model-upload-area">
+            <p>Перетащите .glb / .gltf или нажмите для выбора</p>
+            <span>Максимум 100 МБ</span>
+          </div>
+          <input type="file" id="model-file-input" accept=".glb,.gltf" style="display:none" />
+          <div id="model-preview" style="margin-top:10px;font-size:.875rem;color:var(--c-text-muted)"></div>
+          <p class="photo-progress" id="model-progress"></p>
         </div>
 
         <div class="modal__footer">

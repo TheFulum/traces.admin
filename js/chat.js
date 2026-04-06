@@ -1,10 +1,12 @@
+import { initNav } from './nav.js';
 import { showToast, checkRateLimit, formatRemaining, markActiveNav } from './utils.js';
+initNav('');
 
 markActiveNav();
 
 // ── config ────────────────────────────────────────────────────────────────
 
-const API_KEY  = "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";
+const API_KEY  = "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";
 const ENDPOINT = "https://openrouter.ai/api/v1/chat/completions";
 const MODELS   = [
   "openrouter/free",
@@ -156,6 +158,10 @@ async function sendWithFallback(messages) {
       if (res.status === 429 || res.status === 404 || res.status >= 500) {
         console.warn(`[chat] model ${model} → ${res.status}, trying next…`);
         continue;
+      }
+
+      if (res.status === 401 || res.status === 403) {
+        throw new Error('API ключ недействителен. Обновите ключ OpenRouter в js/chat.js');
       }
 
       if (!res.ok) {
